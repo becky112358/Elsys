@@ -1,0 +1,12 @@
+[package]
+name = "elsys"
+version = "0.1.0"
+edition = "2021"
+description = "Elsys Uplink deserialization"
+repository = "https://github.com/becky112358/Elsys"
+license = "MIT"
+
+[dependencies]
+
+[dev-dependencies]
+base64 = "0.13.0"
