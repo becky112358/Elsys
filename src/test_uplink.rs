@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn test_uplink_partial_eq() {
+fn uplink_partial_eq() {
     let uplink0 = Uplink {
         temperature: Some(22.1),
         co2: Some(9876),
@@ -23,7 +23,7 @@ fn test_close() {
 }
 
 #[test]
-fn test_deserialize_00() {
+fn deserialize_00() {
     let expected_output = Uplink {
         occupancy: Some(Occupancy::PendingOrPir),
         ..Uplink::default()
@@ -36,7 +36,7 @@ fn test_deserialize_00() {
 }
 
 #[test]
-fn test_deserialize_01() {
+fn deserialize_01() {
     let expected_output = Uplink {
         temperature: Some(22.0),
         battery_mv: Some(3649),
@@ -50,7 +50,7 @@ fn test_deserialize_01() {
 }
 
 #[test]
-fn test_deserialize_02() {
+fn deserialize_02() {
     let expected_output = Uplink {
         temperature: Some(24.9),
         battery_mv: Some(3658),
@@ -64,7 +64,7 @@ fn test_deserialize_02() {
 }
 
 #[test]
-fn test_deserialize_03() {
+fn deserialize_03() {
     let expected_output = Uplink {
         temperature: Some(21.2),
         battery_mv: Some(3613),
@@ -76,4 +76,15 @@ fn test_deserialize_03() {
         expected_output,
         Uplink::deserialize(&base64::decode("AQDUAigEABQFAAcOHREB").unwrap()).unwrap()
     )
+}
+
+#[test]
+fn deserialize_no_identifier() {
+    assert!(Uplink::deserialize(&[0x20, 0x00, 0x00]).is_err());
+}
+
+#[test]
+fn deserialize_too_short() {
+    assert!(Uplink::deserialize(&[0x06, 0x00]).is_err());
+    assert!(Uplink::deserialize(&[0x06, 0x00, 0x00]).is_ok());
 }

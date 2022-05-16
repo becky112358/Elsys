@@ -79,19 +79,19 @@ impl Uplink {
 
         let mut i = 0;
         while i < input.len() {
-            for (j, deserialse_pattern) in LAYOUT.iter().enumerate() {
-                if input[i] == deserialse_pattern.identifier {
-                    (deserialse_pattern.bin_to)(input, i + 1, &mut output)?;
-                    i += deserialse_pattern.size;
+            let mut identifier_found = false;
+            for deserialise_pattern in LAYOUT {
+                if input[i] == deserialise_pattern.identifier {
+                    identifier_found = true;
+                    verify_array_length(input, i, deserialise_pattern.size)?;
+                    (deserialise_pattern.bin_to)(input, i + 1, &mut output)?;
+                    i += deserialise_pattern.size;
                     break;
                 }
-                if j == LAYOUT.len() - 1 {
-                    return Err(Error::new(
-                        ErrorKind::InvalidData,
-                        format!("{:?} does not look like an Elsys Uplink (index {} has value {}, which is not an identifier)", input, i, input[i]),
-                    ));
-                }
             }
+
+            verify_pattern_matches(input, i, identifier_found)?;
+
             i += 1;
         }
 
@@ -117,6 +117,36 @@ impl Uplink {
     pub fn occupancy(&self) -> Option<Occupancy> {
         self.occupancy
     }
+}
+
+fn verify_array_length(input: &[u8], i: usize, pattern_size: usize) -> Result<()> {
+    if input.len() <= i + pattern_size {
+        return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!(
+                "{:?} does not look like an Elsys Uplink \
+            (index {} has value {}, which is length {})",
+                input, i, input[i], pattern_size
+            ),
+        ));
+    }
+
+    Ok(())
+}
+
+fn verify_pattern_matches(input: &[u8], i: usize, identifier_found: bool) -> Result<()> {
+    if !identifier_found {
+        return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!(
+                "{:?} does not look like an Elsys Uplink \
+            (index {} has value {}, which is not an identifier)",
+                input, i, input[i]
+            ),
+        ));
+    }
+
+    Ok(())
 }
 
 fn temperature(input: &[u8], i: usize, output: &mut Uplink) -> Result<()> {
